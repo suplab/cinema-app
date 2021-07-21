@@ -28,7 +28,7 @@ Additionally there is a `Eureka` server for client-side discovery and a `Zuul` a
   ```
 ## Running application with Maven
 
-- Open a terminal and make sure you are inside `springboot-elk-prometheus-grafana` folder
+- Open a terminal and make sure you are inside root folder
 
 - Run the following command
   ```
