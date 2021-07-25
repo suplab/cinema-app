@@ -1,5 +1,10 @@
 FROM openjdk:8-jdk-alpine
 MAINTAINER beingsuplab
+WORKDIR /app
+# Add wait script to the image - script pulled from https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /wait
+COPY /scripts/wait /app/
+RUN chmod -R +x /app
+RUN apk --no-cache add curl
 ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} zuul-gateway.jar
-ENTRYPOINT ["java","-jar","/zuul-gateway.jar"]
+COPY ${JAR_FILE} /app/zuul-gateway.jar
+CMD ./wait && java -Djava.security.egd=file:/dev/./urandom -jar zuul-gateway.jar
