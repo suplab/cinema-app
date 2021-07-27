@@ -2,19 +2,24 @@ version: "3.8"
 
 services:
 
-#  mysql:
-#    platform: linux/x86_64
-#    image: mysql:8.0.25
-#    container_name: mysql
-#    restart: unless-stopped
-#    ports:
-#      - "3306:3306"
-#    environment:
-#      - MYSQL_DATABASE=moviesdb
-#      - MYSQL_ROOT_PASSWORD=secret
-#    healthcheck:
-#      test: "mysqladmin ping -u root -p$${MYSQL_ROOT_PASSWORD}"
-#      start_period: 30s
+  mysql:
+    platform: linux/x86_64
+    image: mysql:8.0.25
+    container_name: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    networks:
+      - cinema-network
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: moviesdb
+      MYSQL_USER: movie-api-user
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    healthcheck:
+      test: "mysqladmin ping -u root -p$${MYSQL_ROOT_PASSWORD}"
+      start_period: 30s
 
 #  elasticsearch:
 #    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
@@ -23,6 +28,8 @@ services:
 #    ports:
 #      - "9200:9200"
 #      - "9300:9300"
+#    networks:
+#      - cinema-network
 #    environment:
 #      cluster.name: docker-es-cluster
 #      discovery.type: single-node
@@ -42,6 +49,8 @@ services:
 #    restart: unless-stopped
 #    ports:
 #      - "5044:5044"
+#    networks:
+#      - cinema-network
 #    volumes:
 #      - ./logstash/pipeline:/usr/share/logstash/pipeline/
 #    depends_on:
@@ -56,6 +65,8 @@ services:
 #    restart: unless-stopped
 #    ports:
 #      - "5601:5601"
+#    networks:
+#      - cinema-network
 #    environment:
 #      ELASTICSEARCH_URL: http://elasticsearch:9200
 #    depends_on:
@@ -68,6 +79,8 @@ services:
 #    build: filebeat
 #    container_name: filebeat
 #    restart: unless-stopped
+#    networks:
+#      - cinema-network
 #    volumes:
 #      - /var/run/docker.sock:/var/run/docker.sock
 #      - /var/lib/docker/containers:/usr/share/dockerlogs/data:ro
@@ -79,6 +92,8 @@ services:
     image: prom/prometheus:v2.27.1
     container_name: prometheus
     restart: unless-stopped
+    networks:
+      - cinema-network
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
@@ -93,6 +108,8 @@ services:
     restart: unless-stopped
     ports:
       - 3000:3000
+    networks:
+      - cinema-network
     environment:
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
@@ -111,11 +128,13 @@ services:
     image: config-server:latest
     ports:
       - 8888:8888
+    networks:
+      - cinema-network
     volumes:
       - "/Users/beingsuplab/workspace/git/cinema-app-config/:/config/"
     environment:
       spring.cloud.config.server.git.uri: file://config
-      eureka.client.serviceUrl.defaultZone: http://eureka-server:8761/eureka/
+      eureka.client.serviceUrl.defaultZone: http://eureka-server:8761/eureka
     healthcheck:
       test: "curl --fail --silent localhost:8888/actuator/health | grep UP || exit 1"
       interval: 20s
@@ -131,12 +150,12 @@ services:
     image: eureka-server:latest
     ports:
       - 8761:8761
+    networks:
+      - cinema-network
     environment:
       WAIT_HOSTS: config-server:8888
       WAIT_TIMEOUT: 90
       spring.cloud.config.uri: http://config-server:8888
-      eureka.instance.hostname: eureka-server
-      eureka.client.serviceUrl.defaultZone: http://eureka-server:8761/eureka/
     depends_on:
       - config-server
     healthcheck:
@@ -154,11 +173,14 @@ services:
     image: movies-api:latest
     ports:
       - 8081:8081
+    networks:
+      - cinema-network
     environment:
-      WAIT_HOSTS: config-server:8888
+      WAIT_HOSTS: config-server:8888,eureka-server:8761,mysql:3306
+      WAIT_TIMEOUT: 120
       spring.cloud.config.uri: http://config-server:8888
-      eureka.client.serviceUrl.defaultZone: http://eureka-server:8761/eureka/
     depends_on:
+      - mysql
       - config-server
       - eureka-server
       - reviews-api
@@ -177,10 +199,12 @@ services:
     image: reviews-api:latest
     ports:
       - 8082:8082
+    networks:
+      - cinema-network
     environment:
-      WAIT_HOSTS: config-server:8888
+      WAIT_HOSTS: config-server:8888,eureka-server:8761
+      WAIT_TIMEOUT: 120
       spring.cloud.config.uri: http://config-server:8888
-      eureka.client.serviceUrl.defaultZone: http://eureka-server:8761/eureka/
     depends_on:
       - config-server
       - eureka-server
@@ -199,16 +223,22 @@ services:
     image: zuul-gateway:latest
     ports:
       - 8762:8762
+    networks:
+      - cinema-network
     environment:
-      WAIT_HOSTS: config-server:8888
+      WAIT_HOSTS: config-server:8888,eureka-server:8761
+      WAIT_TIMEOUT: 90
       spring.cloud.config.uri: http://config-server:8888
-      eureka.client.serviceUrl.defaultZone: http://eureka-server:8761/eureka/
     depends_on:
       - config-server
       - eureka-server
     healthcheck:
-      test: "curl --fail --silent zuul-gateway:8762/actuator/health | grep UP || exit 1"
+      test: "curl --fail --silent localhost:8762/actuator/health | grep UP || exit 1"
       interval: 20s
       timeout: 5s
       retries: 5
       start_period: 40s
+
+networks:
+  cinema-network:
+    driver: bridge

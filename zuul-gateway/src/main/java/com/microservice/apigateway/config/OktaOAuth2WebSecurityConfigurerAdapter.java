@@ -9,7 +9,9 @@ public class OktaOAuth2WebSecurityConfigurerAdapter extends WebSecurityConfigure
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().anyRequest().authenticated()
+        http.authorizeRequests()
+                .antMatchers("/actuator/*").permitAll()
+                .anyRequest().authenticated()
                 .and()
                 .oauth2Login()
                 .and()
