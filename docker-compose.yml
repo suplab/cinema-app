@@ -20,6 +20,20 @@ services:
       test: "mysqladmin ping -u root -p$${MYSQL_ROOT_PASSWORD}"
       start_period: 30s
 
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      - MONGO_INITDB_DATABASE=reviewdb
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+    volumes:
+    - "./mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro"
+    ports:
+      - '27017-27019:27017-27019'
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/reviewdb --quiet
+
 #  elasticsearch:
 #    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
 #    container_name: elasticsearch
