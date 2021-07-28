@@ -15,7 +15,7 @@ services:
       MYSQL_DATABASE: moviesdb
       MYSQL_ROOT_PASSWORD: secret
     volumes:
-      - "./mysql/grant.sql:/docker-entrypoint-initdb.d/1.sql"
+      - "./mysql:/docker-entrypoint-initdb.d"
     healthcheck:
       test: "mysqladmin ping -u root -p$${MYSQL_ROOT_PASSWORD}"
       start_period: 30s
