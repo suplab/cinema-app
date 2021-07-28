@@ -1,11 +1,13 @@
 package com.microservices.api.reviews.repository;
 
 import com.microservices.api.reviews.model.MovieReview;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface MovieReviewRepository extends JpaRepository<MovieReview, Long> {
+@Repository
+public interface MovieReviewRepository extends MongoRepository  <MovieReview, Long> {
 
     List<MovieReview> findAllByMovieId(Long MovieId);
 }

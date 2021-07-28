@@ -23,6 +23,9 @@ services:
   mongodb:
     image: mongo:latest
     container_name: mongodb
+    restart: unless-stopped
+    networks:
+      - cinema-network
     environment:
       - MONGO_INITDB_DATABASE=reviewdb
       - MONGO_INITDB_ROOT_USERNAME=root
@@ -33,6 +36,7 @@ services:
       - '27017-27019:27017-27019'
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/reviewdb --quiet
+
 
 #  elasticsearch:
 #    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
@@ -101,37 +105,37 @@ services:
 #      - elasticsearch
 #      - logstash
 
-  prometheus:
-    image: prom/prometheus:v2.27.1
-    container_name: prometheus
-    restart: unless-stopped
-    networks:
-      - cinema-network
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - 9090:9090
-    healthcheck:
-      test: [ "CMD", "nc", "-z", "localhost", "9090" ]
-      start_period: 30s
-
-  grafana:
-    image: grafana/grafana:8.0.1
-    container_name: grafana
-    restart: unless-stopped
-    ports:
-      - 3000:3000
-    networks:
-      - cinema-network
-    environment:
-      - GF_USERS_ALLOW_SIGN_UP=false
-    volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning
-    depends_on:
-      - prometheus
-    healthcheck:
-      test: [ "CMD", "nc", "-z", "localhost", "3000" ]
-      start_period: 30s
+#  prometheus:
+#    image: prom/prometheus:v2.27.1
+#    container_name: prometheus
+#    restart: unless-stopped
+#    networks:
+#      - cinema-network
+#    volumes:
+#      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+#    ports:
+#      - 9090:9090
+#    healthcheck:
+#      test: [ "CMD", "nc", "-z", "localhost", "9090" ]
+#      start_period: 30s
+#
+#  grafana:
+#    image: grafana/grafana:8.0.1
+#    container_name: grafana
+#    restart: unless-stopped
+#    ports:
+#      - 3000:3000
+#    networks:
+#      - cinema-network
+#    environment:
+#      - GF_USERS_ALLOW_SIGN_UP=false
+#    volumes:
+#      - ./grafana/provisioning:/etc/grafana/provisioning
+#    depends_on:
+#      - prometheus
+#    healthcheck:
+#      test: [ "CMD", "nc", "-z", "localhost", "3000" ]
+#      start_period: 30s
 
   config-server:
     container_name: 'config-server'
@@ -190,7 +194,7 @@ services:
       - cinema-network
     environment:
       WAIT_HOSTS: config-server:8888,eureka-server:8761,mysql:3306
-      WAIT_TIMEOUT: 120
+      WAIT_TIMEOUT: 150
       spring.cloud.config.uri: http://config-server:8888
     depends_on:
       - mysql
@@ -215,12 +219,13 @@ services:
     networks:
       - cinema-network
     environment:
-      WAIT_HOSTS: config-server:8888,eureka-server:8761
+      WAIT_HOSTS: config-server:8888,eureka-server:8761,mongodb:27017
       WAIT_TIMEOUT: 120
       spring.cloud.config.uri: http://config-server:8888
     depends_on:
       - config-server
       - eureka-server
+      - mongodb
     healthcheck:
       test: "curl --fail --silent localhost:8082/actuator/health | grep UP || exit 1"
       interval: 20s

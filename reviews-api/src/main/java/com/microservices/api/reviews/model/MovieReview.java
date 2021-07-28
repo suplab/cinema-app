@@ -2,18 +2,16 @@ package com.microservices.api.reviews.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 
 @Data
 @NoArgsConstructor
-@Entity
+@Document(collation = "movieReview")
 public class MovieReview {
 
     @Id
-    @GeneratedValue
     private Long reviewId;
     private Long movieId;
     private String review;

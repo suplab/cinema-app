@@ -13,6 +13,7 @@ public class ReviewsDBInitializer {
     ApplicationRunner initReviews(MovieReviewRepository reviewRepository) {
         return args -> {
             MovieReview lordOfTheRings1 = new MovieReview();
+            lordOfTheRings1.setReviewId(1L);
             lordOfTheRings1.setAuthorName("James Christopher");
             lordOfTheRings1.setMovieId(1L);
             lordOfTheRings1.setReview("The sense of closure is exquisite, but I'm not sure I'm able to forgive Peter " +
@@ -20,6 +21,7 @@ public class ReviewsDBInitializer {
             reviewRepository.save(lordOfTheRings1);
 
             MovieReview lordOfTheRings2 = new MovieReview();
+            lordOfTheRings2.setReviewId(2L);
             lordOfTheRings2.setAuthorName("Keith Phipps");
             lordOfTheRings2.setMovieId(1L);
             lordOfTheRings2.setReview("The Return Of The King ultimately proves up to the series' increasingly difficult" +
@@ -28,6 +30,7 @@ public class ReviewsDBInitializer {
             reviewRepository.save(lordOfTheRings2);
 
             MovieReview theLastSamurai1 = new MovieReview();
+            theLastSamurai1.setReviewId(3L);
             theLastSamurai1.setAuthorName("Richard Schickel");
             theLastSamurai1.setMovieId(2L);
             theLastSamurai1.setReview("It's easy to stand back and wax ironic about The Last Samurai. But it's not all " +
@@ -35,6 +38,7 @@ public class ReviewsDBInitializer {
             reviewRepository.save(theLastSamurai1);
 
             MovieReview theLastSamurai2 = new MovieReview();
+            theLastSamurai2.setReviewId(4L);
             theLastSamurai2.setAuthorName("Stuart Klawans");
             theLastSamurai2.setMovieId(2L);
             theLastSamurai2.setReview("Mostly, though, The Last Samurai aims for, and achieves, epic sweep: the glory of" +
