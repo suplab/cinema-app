@@ -12,11 +12,11 @@ import javax.persistence.Id;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Entity(name = "movie")
 public class Movie {
 
     @Id
-    @GeneratedValue
+    //@GeneratedValue
     private Long imdb;
 
     @Column(nullable = false)

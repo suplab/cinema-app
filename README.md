@@ -70,3 +70,10 @@ To remove the Docker images created by this project, go to a terminal and, insid
 ./remove-docker-images.sh
 ```
  
+## Check DB
+```sql
+mysql> update user set host='%' where user='root';
+mysql> flush privileges;
+mysql> grant all privileges on *.* to 'root'@'localhost';
+mysql> flush privileges;
+```
